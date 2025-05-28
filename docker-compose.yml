@@ -1,0 +1,39 @@
+services:
+  api:
+    container_name: 'expanse-api'
+    build: .
+    ports:
+      - ${PORT:-3354}:3354
+    env_file: '.env'
+    volumes:
+      - .:/usr/app
+    networks:
+      - app-tier
+    depends_on:
+      - main-db
+
+  main-db:
+    image: postgres:12.4-alpine
+    container_name: 'expanse-api-db'
+    restart: always
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    env_file: '.env'
+    networks:
+      - app-tier
+    volumes:
+      - pgdata:/data/postgres
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  app-tier:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local

@@ -1,0 +1,30 @@
+services:
+  api:
+    ports:
+      - ${PORT:-3354}:3354
+    env_file: '.env.development.local'
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/app
+    working_dir: /app
+
+  main-db:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    env_file: '.env.development.local'
+
+  pgadmin:
+    image: dpage/pgadmin4:6.15
+    env_file: '.env.development.local'
+    ports:
+      - '9825:80'
+    depends_on:
+      - main-db
+    networks:
+      - app-tier
+    volumes:
+      - ./pgadmin:/pgadmin
+
+volumes:
+  postgres_data_sc: {}
